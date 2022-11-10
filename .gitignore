@@ -26,3 +26,6 @@ hs_err_pid*
 /raw-uri-string-builder/raw-uri-string-builder.iml
 /raw-uri-string-builder/target/surefire-reports/com.marcelus.uristringbuilder.rawstring.RawUriStringBuilderTest.txt
 /raw-uri-string-builder/target/
+/available-uri-schemes/available-uri-schemes.iml
+/available-uri-schemes/.attach_pid6059
+/available-uri-schemes/target/

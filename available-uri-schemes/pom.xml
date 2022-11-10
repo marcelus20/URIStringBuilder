@@ -7,12 +7,11 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>com.marcelus.uristringbuilder.rawstring</groupId>
-  <artifactId>raw-uri-string-builder</artifactId>
+  <groupId>com.marcelus.uristringbuilder.available.uri.schemes</groupId>
+  <artifactId>available-uri-schemes</artifactId>
   <version>1.0.0-SNAPSHOT</version>
 
-  <name>raw-uri-string-builder</name>
-  <url>http://www.example.com</url>
+  <name>available-uri-schemes</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -25,7 +24,6 @@
     <mvn.surefire.plugin.version>2.22.2</mvn.surefire.plugin.version>
     <mvn.failsafe.plugin.version>2.22.2</mvn.failsafe.plugin.version>
     <!-- End of test attributes -->
-
   </properties>
 
   <dependencies>
@@ -48,7 +46,6 @@
 
   <build>
     <plugins>
-
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${mvn.surefire.plugin.version}</version>
