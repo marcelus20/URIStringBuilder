@@ -54,7 +54,7 @@ class RawUriStringBuilderTest
 //                .append("://") <-- Missing this part.
                 .append("www.foo.bar.com")
 //                .append(":") <- Missing colon after host:
-                .append(8080) // <- This should be considered part of the host
+                .append(8080) // <- This should be considered part of the host since colon was missing in previous append
                 .append("/")
                 .append("path/portion")
                 .append("/")
@@ -80,7 +80,7 @@ class RawUriStringBuilderTest
                 .append("another/path/portion")
                 .build();
 
-        assertEquals("https://www.foo.bar.com8080/path/portion/another/path/portion", url);
+        assertEquals("https://www.foo.bar.com8080path/portion/another/path/portion", url);
     }
 
     /*
@@ -118,7 +118,7 @@ class RawUriStringBuilderTest
     @Test
     void doNotWrapWithSlashesStringsThatRepresentQueryStringParts(){
         String url = new RawUriStringBuilder("www.foo.bar")
-                .append("api") // <- This will be wrapped with slashes /api/
+                .append("/api") // <- This will be wrapped with slashes /api/
                 .append("v1") // <- Slash is supposed to be added only at the start /v1
                 .append("?")
                 .append("key")
@@ -126,5 +126,54 @@ class RawUriStringBuilderTest
                 .append("value").build();
 
         assertEquals("https://www.foo.bar/api/v1?key=value", url);
+    }
+
+    @Test
+    void colonFollowedByDoubleSlashesShouldBeAppendedAfterTheSchemeIfOmitted(){
+        String url = new RawUriStringBuilder()
+                .append("ssh")
+                .append("192.168.0.58")
+                .build();
+        assertEquals("ssh://192.168.0.58", url);
+    }
+
+    @Test
+    void colonFollowedByDoubleSlashesShouldNotDuplicateWhenProvided(){
+        String url = new RawUriStringBuilder()
+                .append("ssh")
+                .append("://") // <-providing ://
+                .append("192.168.0.58")
+                .build();
+        assertEquals("ssh://192.168.0.58", url);
+    }
+
+    @Test
+    void pathShouldBeCorrectlyAppended(){
+        String url = new RawUriStringBuilder()
+                .append("ssh")
+                .append("192.168.0.58")
+                .append("/path")
+                .build();
+        assertEquals("ssh://192.168.0.58/path", url);
+    }
+
+    @Test
+    void pathShouldBeCorrectlyAppendedWhenPreviousStringEndsWithSlash(){
+        String url = new RawUriStringBuilder()
+                .append("ssh")
+                .append("192.168.0.58/")
+                .append("path")
+                .build();
+        assertEquals("ssh://192.168.0.58/path", url);
+    }
+
+    @Test
+    void pathShouldNotDuplicateSlashesWhenPreviousAppendEndsWithSlashAndNextStartsWithSlash(){
+        String url = new RawUriStringBuilder()
+                .append("ssh")
+                .append("192.168.0.58/")
+                .append("/path")
+                .build();
+        assertEquals("ssh://192.168.0.58/path", url);
     }
 }
