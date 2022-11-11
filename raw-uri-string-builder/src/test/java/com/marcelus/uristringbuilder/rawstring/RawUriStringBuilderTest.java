@@ -101,4 +101,30 @@ class RawUriStringBuilderTest
 
         assertEquals("https://www.foo.bar.com:8080/path/portion/another/path/portion", url);
     }
+
+    /*
+     *Scenario: If Schema isn't passed, RawUriStringBuilder should infer to an https schema.
+     */
+    @Test
+    void defaultsToHttpsIfSchemaIsOmitted(){
+        String url = new RawUriStringBuilder("www.foo.bar").build();
+
+        assertEquals("https://www.foo.bar", url);
+    }
+
+    /*
+     *Scenario: Do not wrap string with slashes when portion is part of a query string.
+     */
+    @Test
+    void doNotWrapWithSlashesStringsThatRepresentQueryStringParts(){
+        String url = new RawUriStringBuilder("www.foo.bar")
+                .append("api") // <- This will be wrapped with slashes /api/
+                .append("v1") // <- Slash is supposed to be added only at the start /v1
+                .append("?")
+                .append("key")
+                .append("=")
+                .append("value").build();
+
+        assertEquals("https://www.foo.bar/api/v1?key=value", url);
+    }
 }
