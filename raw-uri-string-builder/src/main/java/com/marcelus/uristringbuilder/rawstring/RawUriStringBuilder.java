@@ -41,94 +41,89 @@ public final class RawUriStringBuilder {
         return Optional.ofNullable(urlPortion)
                 .map(String::valueOf)
                 .map(String::trim)
-                .map(trimmedUrlPortion->{
-                    final Boolean queryStringHasStarted = queryStringStarted || trimmedUrlPortion.contains(QUERY) ||
-                            url.contains(QUERY);
-
-                    if(Boolean.TRUE.equals(checkIfSchemeAndUrlEmpty(trimmedUrlPortion, url))){
-                        return handleSchemeAndEmptyScenario(trimmedUrlPortion);
-                    }
-
-                    // Defaults to https scheme if scheme isn't provided.
-                    if(Boolean.TRUE.equals(checkIfNotSchemeAndURLIsEmpty(trimmedUrlPortion, url))){
-                        return handleNotSchemeWithEmptyURLScenario(trimmedUrlPortion);
-                    }
-
-
-                    if(Boolean.TRUE.equals(checkIfUrlIsSchemeAndTrimmedUrlContainsPostSchemePortion(url, trimmedUrlPortion))){
-                        return handleSchemeUrlAndPostSchemePortionScenario(url, trimmedUrlPortion);
-                    }
-
-
-                    if(Boolean.TRUE.equals(checkIfBothContainsPostSchemePortion(url, trimmedUrlPortion))){
-                        return handleBothContainPostSchemePortionScenario(url, trimmedUrlPortion);
-                    }
-
-
-                    // If path started, remove trailing slashes from start and end of trimmedUrlPortion ONLY if
-                    // query string portion hasn't started.
-                    if(Boolean.TRUE.equals(pathStarted)){
-                        return handleStartedPathScenario(url, trimmedUrlPortion);
-                    }
-
-                    // Verifying if path needs to be started at this point.
-                    if(checkIfPathNeedsToBeStarted(url, trimmedUrlPortion)){
-                        return handlePathNeedsToBeStartedScenario(url, trimmedUrlPortion);
-                    }
-                    return new RawUriStringBuilder((url + trimmedUrlPortion), pathStarted, queryStringHasStarted);
-                }).orElse(new RawUriStringBuilder(""));
+                .map(trimmedUrlPortion->handleSchemeAndEmptyUrlScenario(url, trimmedUrlPortion, pathStarted,
+                        queryStringStarted))
+                .orElse(new RawUriStringBuilder(""));
     }
 
-    private RawUriStringBuilder handlePathNeedsToBeStartedScenario(String url, String trimmedUrlPortion) {
-        return new RawUriStringBuilder(url+trimmedUrlPortion, true, determineIfQueryHasStarted(
-                queryStringStarted, trimmedUrlPortion));
+    private RawUriStringBuilder handleSchemeAndEmptyUrlScenario
+            (String url, String trimmedUrlPortion, Boolean pathStarted, Boolean queryStringStarted) {
+        if(Boolean.TRUE.equals(checkIfSchemeAndUrlEmpty(trimmedUrlPortion, url))){
+            return new RawUriStringBuilder(trimmedUrlPortion + POST_SCHEME_PORTION, pathStarted,
+                    determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
+        }
+        return handleNotSchemeWithEmptyURLScenario(url, trimmedUrlPortion, pathStarted, queryStringStarted);
+    }
+
+    private RawUriStringBuilder handleNotSchemeWithEmptyURLScenario
+            (String url, String trimmedUrlPortion, Boolean pathStarted, Boolean queryStringStarted) {
+        // Defaults to https scheme if scheme isn't provided.
+        if(Boolean.TRUE.equals(checkIfNotSchemeAndURLIsEmpty(url, trimmedUrlPortion))){
+            return new RawUriStringBuilder(produceHttpsDefaultScheme() + trimmedUrlPortion, pathStarted,
+                    determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
+        }
+        return handleSchemeUrlAndPostSchemePortionScenario(url, trimmedUrlPortion, pathStarted, queryStringStarted);
+    }
+
+    private RawUriStringBuilder handleSchemeUrlAndPostSchemePortionScenario
+            (String url, String trimmedUrlPortion, Boolean pathStarted, Boolean queryStringStarted) {
+        if(Boolean.TRUE.equals(checkIfUrlIsSchemeAndTrimmedUrlDoesntContainPostSchemePortion(url, trimmedUrlPortion))){
+            return new RawUriStringBuilder( url+ POST_SCHEME_PORTION +trimmedUrlPortion, pathStarted,
+                determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
+        }
+        return handleUriSchemeWithPostSchemePortionAndTrimmedUrlContainingPostSchemePortion(url, trimmedUrlPortion,
+                pathStarted, queryStringStarted);
+    }
+
+    private RawUriStringBuilder handleUriSchemeWithPostSchemePortionAndTrimmedUrlContainingPostSchemePortion
+            (String url, String trimmedUrlPortion, Boolean pathStarted, Boolean queryStringStarted){
+        if(Boolean.TRUE.equals(url.contains(POST_SCHEME_PORTION) && trimmedUrlPortion.contains(POST_SCHEME_PORTION))){
+            return new RawUriStringBuilder(url + trimmedUrlPortion.replace(POST_SCHEME_PORTION, ""),
+                    pathStarted, determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
+        }
+        return handleStartedPathScenario(url, trimmedUrlPortion, pathStarted, queryStringStarted);
+    }
+
+    private RawUriStringBuilder handleStartedPathScenario
+            (String url, String trimmedUrlPortion, Boolean pathStarted, Boolean queryStringStarted) {
+        // If path started, remove trailing slashes from start and end of trimmedUrlPortion ONLY if
+        // query string portion hasn't started.
+        if(Boolean.TRUE.equals(pathStarted)){
+            return new RawUriStringBuilder((trimSlashes(url) +
+                (Boolean.TRUE.equals(queryStringStarted)?"":PATH_SLASH)+ trimSlashes(trimmedUrlPortion))
+                .replace(PATH_SLASH + QUERY, QUERY),
+                    pathStarted, determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
+        }
+        return handlePathNeedsToBeStartedScenario(url, trimmedUrlPortion, pathStarted, queryStringStarted);
+    }
+
+    private RawUriStringBuilder handlePathNeedsToBeStartedScenario
+            (String url, String trimmedUrlPortion, Boolean pathStarted, Boolean queryStringStarted) {
+        // Verifying if path needs to be started at this point.
+        if(checkIfPathNeedsToBeStarted(url, trimmedUrlPortion)){
+            return new RawUriStringBuilder(url+trimmedUrlPortion, true,
+                    determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
+        }
+
+        // End of flow
+        return new RawUriStringBuilder((url + trimmedUrlPortion), pathStarted, queryStringStarted ||
+                trimmedUrlPortion.contains(QUERY) || url.contains(QUERY));
     }
 
     private boolean checkIfPathNeedsToBeStarted(String url, String trimmedUrlPortion) {
         return (url+trimmedUrlPortion).replace(POST_SCHEME_PORTION,"").contains(PATH_SLASH);
     }
 
-    private RawUriStringBuilder handleStartedPathScenario(String url, String trimmedUrlPortion) {
-        return new RawUriStringBuilder((trimSlashes(url) +
-                (Boolean.TRUE.equals(queryStringStarted)?"":PATH_SLASH)+ trimSlashes(trimmedUrlPortion))
-                .replace(PATH_SLASH + QUERY, QUERY),
-                pathStarted, determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
-    }
-
-    private RawUriStringBuilder handleBothContainPostSchemePortionScenario(String url, String trimmedUrlPortion) {
-        return new RawUriStringBuilder(url + trimmedUrlPortion.replace(POST_SCHEME_PORTION, ""),
-                pathStarted, determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
-    }
-
-    private Boolean checkIfBothContainsPostSchemePortion(String url, String trimmedUrlPortion) {
-        return url.contains(POST_SCHEME_PORTION) && trimmedUrlPortion.contains(POST_SCHEME_PORTION);
-    }
-
-    private RawUriStringBuilder handleSchemeUrlAndPostSchemePortionScenario(String url, String trimmedUrlPortion) {
-        return new RawUriStringBuilder( url+ POST_SCHEME_PORTION +trimmedUrlPortion, pathStarted,
-                determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
-    }
-
-    private Boolean checkIfUrlIsSchemeAndTrimmedUrlContainsPostSchemePortion(String url, String trimmedUrlPortion) {
+    private Boolean checkIfUrlIsSchemeAndTrimmedUrlDoesntContainPostSchemePortion(String url, String trimmedUrlPortion) {
         return URISchemes.isScheme(url) && !trimmedUrlPortion.contains(POST_SCHEME_PORTION);
-    }
-
-    private RawUriStringBuilder handleNotSchemeWithEmptyURLScenario(String trimmedUrlPortion) {
-        return new RawUriStringBuilder(produceHttpsDefaultScheme() + trimmedUrlPortion, pathStarted,
-                determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
     }
 
     private String produceHttpsDefaultScheme() {
         return DEFAULT_SCHEME + POST_SCHEME_PORTION;
     }
 
-    private Boolean checkIfNotSchemeAndURLIsEmpty(String trimmedUrlPortion, String url) {
+    private Boolean checkIfNotSchemeAndURLIsEmpty(String url, String trimmedUrlPortion) {
         return !URISchemes.isScheme(trimmedUrlPortion) && url.isEmpty();
-    }
-
-    private  RawUriStringBuilder handleSchemeAndEmptyScenario(final String trimmedUrlPortion) {
-        return new RawUriStringBuilder(trimmedUrlPortion + POST_SCHEME_PORTION, pathStarted,
-                                determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
     }
 
     private Boolean determineIfQueryHasStarted(final Boolean queryStringStarted, final String trimmedUrlPortion) {
