@@ -205,4 +205,114 @@ class RawUriStringBuilderTest
                 .build();
         assertEquals("ssh://192.168.0.58/z39.50s", url);
     }
+
+    @Test
+    void handlingOfSlashlessPathWhenPortIsDetected(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58")
+                .append(":8080") // <-port provided
+                .append("api") // <- So slash will be automatically provided.
+                .build();
+        assertEquals("ftp://192.168.0.58:8080/api", url);
+    }
+
+
+    @Test
+    void handlingColonSeparatedFromPortNumber(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:") // <-- Colon separated from port number
+                .append("8080") // <-port provided
+                .append("api") //
+                .build();
+        assertEquals("ftp://192.168.0.58:8080/api", url);
+    }
+
+    @Test
+    void handlingPortSplitIntoTwoAppendsWillTreatSecondAppendAsPathAndNotPort(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80") // <-- one part of port here
+                .append("80") // other port part here, should then consider path, not part of the port.
+                .append("api")
+                .build();
+        assertEquals("ftp://192.168.0.58:80/80/api", url);
+    }
+
+    @Test
+    void portDetectionShouldAddSlashAfterNumberAndBeforePathLetterIfBothAreInTheSameAppend(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80pathhere") // <-- slash should be added between 80/pathhere
+                .append("80") // other port part here, should then consider path, not part of the port.
+                .append("api")
+                .build();
+        assertEquals("ftp://192.168.0.58:80/pathhere/80/api", url);
+    }
+
+    @Test
+    void testingPortDetectionWithQueryString(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80pathhere") // <-- slash should be added between 80/pathhere
+                .append("80") // other port part here, should then consider path, not part of the port.
+                .append("api?")
+                .build();
+        assertEquals("ftp://192.168.0.58:80/pathhere/80/api?", url);
+    }
+
+    @Test
+    void testingPortDetectionWithQueryStringAnd2PairsAfter(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80pathhere") // <-- slash should be added between 80/pathhere
+                .append("80") // other port part here, should then consider path, not part of the port.
+                .append("api")
+                .append("?foo=")
+                .append("bar")
+                .append("&fizz=")
+                .append("buzz")
+                .build();
+        assertEquals("ftp://192.168.0.58:80/pathhere/80/api?foo=bar&fizz=buzz", url);
+    }
+
+    @Test
+    void testingPortDetectionWithQueryStringAnd2PairsAfterWithDuplicatedQueryStrings(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80pathhere")
+                .append("80")
+                .append("api?")
+                .append("?foo=")
+                .append("=bar&")
+                .append("&fizz=")
+                .append("=buzz")
+                .build();
+        assertEquals("ftp://192.168.0.58:80/pathhere/80/api?foo=bar&fizz=buzz", url);
+    }
+
+    @Test
+    void duplicatedEqualsAsAQueryValueMustRemainDuplicated(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80pathhere")
+                .append("80")
+                .append("api?")
+                .append("?text=The+comparison+Operator+is+==") //<-- Duplicate == at the end should remain
+                .build();
+        assertEquals("ftp://192.168.0.58:80/pathhere/80/api?text=The+comparison+Operator+is+==", url);
+    }
+
+    @Test
+    void duplicatedInterrogationTagAsAQueryValueMustRemainDuplicated(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80pathhere")
+                .append("80")
+                .append("api?")
+                .append("text=as+value+it+should+be+possible+to+duplicate+this??") //<-- Duplicate == at the end should remain
+                .build();
+        assertEquals("ftp://192.168.0.58:80/pathhere/80/api?text=as+value+it+should+be+possible+to+duplicate+this??", url);
+    }
 }
