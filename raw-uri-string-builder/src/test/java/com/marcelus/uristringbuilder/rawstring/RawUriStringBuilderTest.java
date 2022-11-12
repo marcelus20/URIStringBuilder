@@ -158,6 +158,15 @@ class RawUriStringBuilderTest
     }
 
     @Test
+    void pathShouldBeCorrectlyAppendedButSchemePassedInTheConstructorParam(){
+        String url = new RawUriStringBuilder("ssh")
+                .append("192.168.0.58")
+                .append("/path")
+                .build();
+        assertEquals("ssh://192.168.0.58/path", url);
+    }
+
+    @Test
     void pathShouldBeCorrectlyAppendedWhenPreviousStringEndsWithSlash(){
         String url = new RawUriStringBuilder()
                 .append("ssh")
@@ -175,5 +184,25 @@ class RawUriStringBuilderTest
                 .append("/path")
                 .build();
         assertEquals("ssh://192.168.0.58/path", url);
+    }
+
+    @Test
+    void lastPathWithTrailingSlashScenario(){
+        String url = new RawUriStringBuilder()
+                .append("ssh")
+                .append("192.168.0.58/")
+                .append("/path/") //<- trailing slash
+                .build();
+        assertEquals("ssh://192.168.0.58/path", url);
+    }
+
+    @Test
+    void ifSchemePortionIsFoundInTheMiddleOfTheChainItWontBeConsideredScheme(){
+        String url = new RawUriStringBuilder()
+                .append("ssh")
+                .append("192.168.0.58/")
+                .append("/z39.50s")
+                .build();
+        assertEquals("ssh://192.168.0.58/z39.50s", url);
     }
 }
