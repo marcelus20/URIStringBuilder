@@ -18,5 +18,6 @@
   
   <modules>
     <module>raw-uri-string-builder</module>
+    <module>available-uri-schemes</module>
   </modules>
 </project>
