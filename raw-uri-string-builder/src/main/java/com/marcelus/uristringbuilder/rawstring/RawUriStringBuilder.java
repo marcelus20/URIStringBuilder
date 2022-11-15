@@ -207,13 +207,15 @@ public final class RawUriStringBuilder {
         if(checkPortDetection(url, trimmedUrlPortion)){
 
             final String result = retrievePortionFromPatternMatcher(url, trimmedUrlPortion);
+            final Boolean queryStringHasStarted = determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion);
+            final String suffix = Boolean.TRUE.equals(queryStringHasStarted)? "" : PATH_SLASH;
 
-            return new RawUriStringBuilder((url+trimmedUrlPortion).replace(result, result + PATH_SLASH),
-                    true, true, determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
+            return new RawUriStringBuilder((url+trimmedUrlPortion).replace(result, result + suffix),
+                    true, true, queryStringHasStarted);
         }
 
         // End of flow
-        return new RawUriStringBuilder(url + trimmedUrlPortion, pathStarted, portDetected,
+        return new RawUriStringBuilder((url + trimmedUrlPortion), pathStarted, portDetected,
                 queryStringStarted ||trimmedUrlPortion.contains(QUERY) || url.contains(QUERY));
     }
 
@@ -330,7 +332,7 @@ public final class RawUriStringBuilder {
                 .map(String::trim)
                 .map(trimmedUrl->{
                     if (trimmedUrl.startsWith(PATH_SLASH)) {
-                        return trimmedUrl.substring(1);
+                        return trimmedUrl.replaceAll("^/*", "");
                     }
                     return trimmedUrl;
                 });
@@ -341,7 +343,7 @@ public final class RawUriStringBuilder {
                 .map(String::trim)
                 .map(trimmedUrl->{
                     if (trimmedUrl.endsWith(PATH_SLASH)) {
-                        return trimmedUrl.substring(0, trimmedUrl.length() - 1);
+                        return trimmedUrl.replaceAll("/*$", "");
                     }
                     return trimmedUrl;
                 });
@@ -375,7 +377,7 @@ public final class RawUriStringBuilder {
         return trim(urlPortion)
                 .map(trimmedUrl->{
                     if (trimmedUrl.startsWith(QUERY_AND)) {
-                        return trimmedUrl.substring(1);
+                        return trimmedUrl.replaceAll("^&*", "");
                     }
                     return trimmedUrl;
                 });
@@ -385,7 +387,7 @@ public final class RawUriStringBuilder {
         return trim(urlPortion)
                 .map(trimmedUrl->{
                     if (trimmedUrl.endsWith(QUERY_AND)) {
-                        return trimmedUrl.substring(0, trimmedUrl.length() - 1);
+                        return trimmedUrl.replaceAll("&*$", "");
                     }
                     return trimmedUrl;
                 });
@@ -395,7 +397,7 @@ public final class RawUriStringBuilder {
         return trim(urlPortion)
                 .map(trimmedUrl->{
                     if (trimmedUrl.startsWith(QUERY_EQUALS)) {
-                        return trimmedUrl.substring(1);
+                        return trimmedUrl.replaceAll("^=*", "");
                     }
                     return trimmedUrl;
                 });
@@ -405,7 +407,7 @@ public final class RawUriStringBuilder {
         return trim(urlPortion)
                 .map(trimmedUrl->{
                     if (trimmedUrl.endsWith(QUERY_EQUALS)) {
-                        return trimmedUrl.substring(0, trimmedUrl.length() - 1);
+                        return trimmedUrl.replaceAll("=*$", "");
                     }
                     return trimmedUrl;
                 });
@@ -415,7 +417,7 @@ public final class RawUriStringBuilder {
         return trim(urlPortion)
                 .map(trimmedUrl->{
                     if (trimmedUrl.startsWith(QUERY)) {
-                        return trimmedUrl.substring(1);
+                        return trimmedUrl.replaceAll("^\\?*", "");
                     }
                     return trimmedUrl;
                 });
@@ -425,7 +427,7 @@ public final class RawUriStringBuilder {
         return trim(urlPortion)
                 .map(trimmedUrl->{
                     if (trimmedUrl.endsWith(QUERY)) {
-                        return trimmedUrl.substring(0, trimmedUrl.length() - 1);
+                        return trimmedUrl.replaceAll("\\?*$", "");
                     }
                     return trimmedUrl;
                 });
