@@ -315,4 +315,45 @@ class RawUriStringBuilderTest
                 .build();
         assertEquals("ftp://192.168.0.58:80/pathhere/80/api?text=as+value+it+should+be+possible+to+duplicate+this??", url);
     }
+
+    @Test
+    void repeatedSlashesShouldBeRemovedBetweenAppends(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80//////")
+                .append("////path////")
+                .append("///api?")
+                .build();
+        assertEquals("ftp://192.168.0.58:80/path/api?", url);
+    }
+
+    @Test
+    void repeatedQueriesShouldBeRemovedBetweenAppends(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80??????")
+                .append("????ticketId=123456")
+                .build();
+        assertEquals("ftp://192.168.0.58:80?ticketId=123456", url);
+    }
+
+    @Test
+    void repeatedQueryAndOpShouldBeRemovedBetweenAppends(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80?foo=bar&&&&&&&")
+                .append("&&&&&ticketId=123456")
+                .build();
+        assertEquals("ftp://192.168.0.58:80?foo=bar&ticketId=123456", url);
+    }
+
+    @Test
+    void repeatedQueryEqualShouldBeRemovedBetweenAppends(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80?foo======")
+                .append("=====bar")
+                .build();
+        assertEquals("ftp://192.168.0.58:80?foo=bar", url);
+    }
 }
