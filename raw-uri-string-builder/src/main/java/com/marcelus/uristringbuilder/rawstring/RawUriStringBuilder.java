@@ -2,21 +2,18 @@ package com.marcelus.uristringbuilder.rawstring;
 
 import com.marcelus.uristringbuilder.available.uri.schemes.URISchemes;
 
-
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import static com.marcelus.uristringbuilder.utils.QueryTrimmers.trimQueryComponentsAndMerge;
+import static com.marcelus.uristringbuilder.utils.SlashTrimmers.trimSlashes;
+import static com.marcelus.uristringbuilder.utils.StringUtils.convertObjectToString;
+import static com.marcelus.uristringbuilder.utils.StringUtils.retrievePartAfterPatternMatcher;
+import static com.marcelus.uristringbuilder.utils.UriPortionConstants.DEFAULT_SCHEME;
+import static com.marcelus.uristringbuilder.utils.UriPortionConstants.PATH_SLASH;
+import static com.marcelus.uristringbuilder.utils.UriPortionConstants.PORT_REGEX;
+import static com.marcelus.uristringbuilder.utils.UriPortionConstants.PORT_START_DELIMITER;
+import static com.marcelus.uristringbuilder.utils.UriPortionConstants.POST_SCHEME_PORTION;
+import static com.marcelus.uristringbuilder.utils.UriPortionConstants.QUERY;
 
 public final class RawUriStringBuilder {
-    private static final String PORT_REGEX=".*:\\d+.*";
-    private static final String POST_SCHEME_PORTION = "://";
-    private static final String DEFAULT_SCHEME = "https";
-    private static final String PATH_SLASH = "/";
-    private static final String QUERY = "?";
-    private static final String QUERY_EQUALS = "=";
-    private static final String QUERY_AND = "&";
-    private static final String PORT_START_DELIMITER = ":";
-
 
     /*
     Fields
@@ -37,13 +34,14 @@ public final class RawUriStringBuilder {
      */
     public RawUriStringBuilder(final String url) {
         if(checkPostSchemeCondition(url)){
-            this.url = DEFAULT_SCHEME + POST_SCHEME_PORTION + url.trim();
+            this.url = DEFAULT_SCHEME.getValue() + POST_SCHEME_PORTION.getValue() + url.trim();
         }else{
             this.url = url.trim();
         }
-        portDetected = url.matches(PORT_REGEX);
-        pathStarted = portDetected || url.replace(POST_SCHEME_PORTION,"").contains(PATH_SLASH);
-        queryStringStarted = url.contains(QUERY);
+        portDetected = url.matches(PORT_REGEX.getValue());
+        pathStarted = portDetected || url.replace(POST_SCHEME_PORTION.getValue(),"")
+                .contains(PATH_SLASH.getValue());
+        queryStringStarted = url.contains(QUERY.getValue());
     }
 
     public RawUriStringBuilder() {
@@ -72,9 +70,7 @@ public final class RawUriStringBuilder {
 
 
     public RawUriStringBuilder append(final Object urlPortion) {
-        return Optional.ofNullable(urlPortion)
-                .map(String::valueOf)
-                .map(String::trim)
+        return convertObjectToString(urlPortion)
                 .map(trimmedUrlPortion->handleSchemeAndEmptyUrlScenario(url, trimmedUrlPortion, pathStarted,
                         portDetected, queryStringStarted))
                 .orElse(new RawUriStringBuilder(""));
@@ -99,7 +95,7 @@ public final class RawUriStringBuilder {
 
 
         if(Boolean.TRUE.equals(checkIfSchemeAndUrlEmpty(trimmedUrlPortion, url))){
-            return new RawUriStringBuilder(trimmedUrlPortion + POST_SCHEME_PORTION, pathStarted, portDetected,
+            return new RawUriStringBuilder(trimmedUrlPortion + POST_SCHEME_PORTION.getValue(), pathStarted, portDetected,
                     determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
         }
         return handleNotSchemeWithEmptyURLScenario(url, trimmedUrlPortion, pathStarted, portDetected,
@@ -131,7 +127,7 @@ public final class RawUriStringBuilder {
 
 
         if(Boolean.TRUE.equals(checkIfUrlIsSchemeAndTrimmedUrlDoesntContainPostSchemePortion(url, trimmedUrlPortion))){
-            return new RawUriStringBuilder( url+ POST_SCHEME_PORTION +trimmedUrlPortion, pathStarted, portDetected,
+            return new RawUriStringBuilder( url+ POST_SCHEME_PORTION.getValue() +trimmedUrlPortion, pathStarted, portDetected,
                 determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion));
         }
         return handleUriSchemeWithPostSchemePortionAndTrimmedUrlContainingPostSchemePortion(url, trimmedUrlPortion,
@@ -146,9 +142,10 @@ public final class RawUriStringBuilder {
             final Boolean queryStringStarted){
 
 
-        if(Boolean.TRUE.equals(url.contains(POST_SCHEME_PORTION) && trimmedUrlPortion.contains(POST_SCHEME_PORTION))){
+        if(Boolean.TRUE.equals(url.contains(POST_SCHEME_PORTION.getValue()) && trimmedUrlPortion
+                .contains(POST_SCHEME_PORTION.getValue()))){
             return new RawUriStringBuilder(
-                    url + trimmedUrlPortion.replace(POST_SCHEME_PORTION, ""),
+                    url + trimmedUrlPortion.replace(POST_SCHEME_PORTION.getValue(), ""),
                     pathStarted,
                     portDetected,
                     determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion)
@@ -206,9 +203,9 @@ public final class RawUriStringBuilder {
 
         if(checkPortDetection(url, trimmedUrlPortion)){
 
-            final String result = retrievePortionFromPatternMatcher(url, trimmedUrlPortion);
+            final String result = retrievePartAfterPatternMatcher(url + trimmedUrlPortion, ":\\d+");
             final Boolean queryStringHasStarted = determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion);
-            final String suffix = Boolean.TRUE.equals(queryStringHasStarted)? "" : PATH_SLASH;
+            final String suffix = Boolean.TRUE.equals(queryStringHasStarted)? "" : PATH_SLASH.getValue();
 
             return new RawUriStringBuilder((url+trimmedUrlPortion).replace(result, result + suffix),
                     true, true, queryStringHasStarted);
@@ -216,7 +213,8 @@ public final class RawUriStringBuilder {
 
         // End of flow
         return new RawUriStringBuilder((url + trimmedUrlPortion), pathStarted, portDetected,
-                queryStringStarted ||trimmedUrlPortion.contains(QUERY) || url.contains(QUERY));
+                queryStringStarted ||trimmedUrlPortion.contains(QUERY.getValue()) || url
+                        .contains(QUERY.getValue()));
     }
 
 
@@ -228,46 +226,28 @@ public final class RawUriStringBuilder {
      */
 
 
+
+
     /*
     MISC
      */
-    private String retrievePortionFromPatternMatcher(final String url, final String trimmedUrlPortion) {
-        final Pattern p = Pattern.compile(":\\d+");
-        final Matcher m = p.matcher(url+trimmedUrlPortion);
-        if(m.find()){
-            return m.group();
-        }else {
-            return "";
-        }
-    }
-
-
     private String mergeUrlAndTrimmedPortion(
             final String url, final String trimmedUrlPortion, Boolean queryStringStarted
     ) {
         if(Boolean.TRUE.equals(queryStringStarted)){
             // Trim the query strings components: ?, = and &
-            return trimQueryComponents(url, trimmedUrlPortion);
+            return trimQueryComponentsAndMerge(url, trimmedUrlPortion);
         }else{
             // trim the slashes (path has started)
             return ((trimSlashes(url) +
-                    (Boolean.TRUE.equals(this.queryStringStarted)?"":PATH_SLASH)+ trimSlashes(trimmedUrlPortion))
-                    .replace(PATH_SLASH + QUERY, QUERY));
+                    (Boolean.TRUE.equals(this.queryStringStarted)?"":PATH_SLASH.getValue())+ trimSlashes(trimmedUrlPortion))
+                    .replace(PATH_SLASH.getValue() + QUERY.getValue(), QUERY.getValue()));
         }
     }
 
-
-
     private String produceHttpsDefaultScheme() {
-        return DEFAULT_SCHEME + POST_SCHEME_PORTION;
+        return DEFAULT_SCHEME.getValue() + POST_SCHEME_PORTION.getValue();
     }
-
-    private Optional<String> trim(String string){
-        return Optional.ofNullable(string)
-                .map(String::trim);
-    }
-
-
 
     /*
     END OF MISC
@@ -280,25 +260,27 @@ public final class RawUriStringBuilder {
         CONDITION HELPERS
      */
     private boolean checkPostSchemeCondition(String url) {
-        return (!url.contains(POST_SCHEME_PORTION) || url.startsWith(POST_SCHEME_PORTION)) && Boolean
+        return (!url.contains(POST_SCHEME_PORTION.getValue()) || url.startsWith(POST_SCHEME_PORTION.getValue())) && Boolean
                 .FALSE.equals(URISchemes.isScheme(url.trim()));
     }
 
     private boolean checkPortDetection(final String url, final String trimmedUrlPortion) {
-        return url.matches(PORT_REGEX) || trimmedUrlPortion.matches(PORT_REGEX) || url.endsWith(PORT_START_DELIMITER)
-                && trimmedUrlPortion.matches("\\d+.?") || (url+trimmedUrlPortion).matches(PORT_REGEX);
+        return url.matches(PORT_REGEX.getValue()) || trimmedUrlPortion.matches(PORT_REGEX.getValue()) || url
+                .endsWith(PORT_START_DELIMITER.getValue())
+                && trimmedUrlPortion.matches("\\d+.?") || (url+trimmedUrlPortion).matches(PORT_REGEX.getValue());
     }
     private Boolean determineIfQueryHasStarted(final Boolean queryStringStarted, final String trimmedUrlPortion) {
-        return queryStringStarted|| trimmedUrlPortion.contains(QUERY);
+        return queryStringStarted|| trimmedUrlPortion.contains(QUERY.getValue());
     }
 
     private boolean checkIfPathNeedsToBeStarted(final String url, final String trimmedUrlPortion) {
-        return (url+trimmedUrlPortion).replace(POST_SCHEME_PORTION,"").contains(PATH_SLASH);
+        return (url+trimmedUrlPortion).replace(POST_SCHEME_PORTION.getValue(),"")
+                .contains(PATH_SLASH.getValue());
     }
     private Boolean checkIfUrlIsSchemeAndTrimmedUrlDoesntContainPostSchemePortion(
             final String url, final String trimmedUrlPortion
     ) {
-        return URISchemes.isScheme(url) && !trimmedUrlPortion.contains(POST_SCHEME_PORTION);
+        return URISchemes.isScheme(url) && !trimmedUrlPortion.contains(POST_SCHEME_PORTION.getValue());
     }
 
     private Boolean checkIfNotSchemeAndURLIsEmpty(final String url, final String trimmedUrlPortion) {
@@ -311,130 +293,6 @@ public final class RawUriStringBuilder {
 
     /*
        END OF CONDITION HELPERS
-     */
-
-
-
-
-
-    /*
-        Trimmers and removers
-     */
-
-    private String trimSlashes(final String url) {
-        return removeSlashFromEnd(url)
-                .flatMap(this::removeSlashFromStart)
-                .orElse("");
-    }
-
-    private Optional<String> removeSlashFromStart(String url) {
-        return Optional.ofNullable(url)
-                .map(String::trim)
-                .map(trimmedUrl->{
-                    if (trimmedUrl.startsWith(PATH_SLASH)) {
-                        return trimmedUrl.replaceAll("^/*", "");
-                    }
-                    return trimmedUrl;
-                });
-    }
-
-    private Optional<String> removeSlashFromEnd(final String url){
-        return Optional.ofNullable(url)
-                .map(String::trim)
-                .map(trimmedUrl->{
-                    if (trimmedUrl.endsWith(PATH_SLASH)) {
-                        return trimmedUrl.replaceAll("/*$", "");
-                    }
-                    return trimmedUrl;
-                });
-    }
-
-    private String trimQueryComponents(final String urlPortion, String trimmedUrlPortion) {
-        if(urlPortion.endsWith(QUERY_AND)){
-            return removeQueryAndFromEnd(urlPortion)
-                    .flatMap(removedUrlPortionQueryAnd->removeQueryAndFromStart(trimmedUrlPortion)
-                            .map(removedTrimmedUrlPortionQueryAnd->
-                                    removedUrlPortionQueryAnd + QUERY_AND + removedTrimmedUrlPortionQueryAnd)
-                    ).orElse("");
-        } else if(urlPortion.endsWith(QUERY_EQUALS)){
-            return removeQueryEqualsFromEnd(urlPortion)
-                    .flatMap(removedUrlPortionQueryEquals-> removeQueryEqualsFromStart(trimmedUrlPortion)
-                            .map(removedTrimmedUrlPortionQueryEquals->
-                                    removedUrlPortionQueryEquals + QUERY_EQUALS + removedTrimmedUrlPortionQueryEquals)
-                    ).orElse("");
-        }else if(urlPortion.endsWith(QUERY)){
-            return removeQuestionTagFromEnd(urlPortion)
-                    .flatMap(removedUrlPortionQueryEquals->removeQuestionTagFromStart(trimmedUrlPortion)
-                            .map(removedTrimmedUrlPortionQueryEquals->
-                                    removedUrlPortionQueryEquals + QUERY + removedTrimmedUrlPortionQueryEquals)
-                    ).orElse("");
-        }else{
-            return urlPortion + trimmedUrlPortion;
-        }
-    }
-
-    private Optional<String> removeQueryAndFromStart(final String urlPortion) {
-        return trim(urlPortion)
-                .map(trimmedUrl->{
-                    if (trimmedUrl.startsWith(QUERY_AND)) {
-                        return trimmedUrl.replaceAll("^&*", "");
-                    }
-                    return trimmedUrl;
-                });
-    }
-
-    private Optional<String> removeQueryAndFromEnd(String urlPortion) {
-        return trim(urlPortion)
-                .map(trimmedUrl->{
-                    if (trimmedUrl.endsWith(QUERY_AND)) {
-                        return trimmedUrl.replaceAll("&*$", "");
-                    }
-                    return trimmedUrl;
-                });
-    }
-
-    private Optional<String> removeQueryEqualsFromStart(String urlPortion) {
-        return trim(urlPortion)
-                .map(trimmedUrl->{
-                    if (trimmedUrl.startsWith(QUERY_EQUALS)) {
-                        return trimmedUrl.replaceAll("^=*", "");
-                    }
-                    return trimmedUrl;
-                });
-    }
-
-    private Optional<String> removeQueryEqualsFromEnd(String urlPortion) {
-        return trim(urlPortion)
-                .map(trimmedUrl->{
-                    if (trimmedUrl.endsWith(QUERY_EQUALS)) {
-                        return trimmedUrl.replaceAll("=*$", "");
-                    }
-                    return trimmedUrl;
-                });
-    }
-
-    private Optional<String> removeQuestionTagFromStart(String urlPortion) {
-        return trim(urlPortion)
-                .map(trimmedUrl->{
-                    if (trimmedUrl.startsWith(QUERY)) {
-                        return trimmedUrl.replaceAll("^\\?*", "");
-                    }
-                    return trimmedUrl;
-                });
-    }
-
-    private Optional<String> removeQuestionTagFromEnd(String urlPortion) {
-        return trim(urlPortion)
-                .map(trimmedUrl->{
-                    if (trimmedUrl.endsWith(QUERY)) {
-                        return trimmedUrl.replaceAll("\\?*$", "");
-                    }
-                    return trimmedUrl;
-                });
-    }
-
-    /*
-        END OF Trimmers and removers
      */
 
 

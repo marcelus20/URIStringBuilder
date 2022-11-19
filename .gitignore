@@ -29,3 +29,6 @@ hs_err_pid*
 /available-uri-schemes/available-uri-schemes.iml
 /available-uri-schemes/.attach_pid6059
 /available-uri-schemes/target/
+/structured-uri-string-builder/structured-uri-string-builder.iml
+/structured-uri-string-builder/target/
+/uri-string-builder-utils/target/

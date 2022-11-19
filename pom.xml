@@ -14,10 +14,22 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+
+    <!-- Test Attributes -->
+    <junit.jupiter.version>5.9.1</junit.jupiter.version>
+    <junit.jupiter.api.version>5.9.1</junit.jupiter.api.version>
+    <mvn.surefire.plugin.version>2.22.2</mvn.surefire.plugin.version>
+    <mvn.failsafe.plugin.version>2.22.2</mvn.failsafe.plugin.version>
+    <!-- End of test attributes -->
   </properties>
   
   <modules>
     <module>raw-uri-string-builder</module>
     <module>available-uri-schemes</module>
+    <module>structured-uri-string-builder</module>
+    <module>uri-string-builder-utils</module>
   </modules>
 </project>
