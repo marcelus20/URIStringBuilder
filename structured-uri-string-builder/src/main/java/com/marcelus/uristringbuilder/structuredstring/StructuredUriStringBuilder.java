@@ -1,5 +1,8 @@
 package com.marcelus.uristringbuilder.structuredstring;
 
+import com.marcelus.uristringbuilder.utils.QueryTrimmers;
+import com.marcelus.uristringbuilder.utils.SlashTrimmers;
+
 import java.util.Optional;
 
 public final class StructuredUriStringBuilder {
@@ -46,46 +49,19 @@ public final class StructuredUriStringBuilder {
 
     public StructuredUriStringBuilder appendPath(final Object path){
         return convertObjectToString(path)
-                .map(this::trimSlashes)
+                .map(SlashTrimmers::trimSlashes)
                 .map(sPath->new StructuredUriStringBuilder(scheme, host, port, processPath(this.path, sPath), query))
                 .orElse(new StructuredUriStringBuilder(scheme, host, port, this.path, query));
     }
 
-    private String trimSlashes(String path) {
-        return Optional.ofNullable(path)
-                .map(String::trim)
-                .flatMap(this::trimSlashAtStart)
-                .flatMap(this::trimSlashAtEnd)
-                .orElse("");
-    }
 
-    private Optional<String> trimSlashAtEnd(String path){
-        return Optional.ofNullable(path)
-                .map(String::trim)
-                .map(p->{
-                    if(p.startsWith("/")){
-                        return p.replaceAll("/*$", "");
-                    }
-                    return p;
-                });
-    }
-
-    private Optional<String> trimSlashAtStart(String path) {
-        return Optional.ofNullable(path)
-                .map(String::trim)
-                .map(nonNullPath->{
-                    if(nonNullPath.startsWith("/")){
-                        return nonNullPath.replaceAll("^/*", "");
-                    }
-                    return nonNullPath;
-                });
-    }
 
     public StructuredUriStringBuilder appendQuery(final Object key, final Object value){
         return convertObjectToString(key)
                 .flatMap(sKey->convertObjectToString(value)
                         .map(sValue->new StructuredUriStringBuilder(scheme, host, port, path,
-                                processQuery(this.query, sKey + "=" +sValue))))
+                                processQuery(this.query, QueryTrimmers
+                                        .trimQueryComponents(sKey) + "=" + QueryTrimmers.trimQueryComponents(sValue)))))
                 .orElse(new StructuredUriStringBuilder(scheme, host, port, path, this.query));
     }
 
@@ -106,8 +82,16 @@ public final class StructuredUriStringBuilder {
     }
 
     private String processQuery(final String currentQuery, final String newQuery) {
-        if(currentQuery.isEmpty()) return String.format("?%s", newQuery);
-        return String.format("%s&%s", currentQuery ,newQuery);
+        return Optional.ofNullable(currentQuery)
+                .flatMap(nonNullCurrentQuery->Optional.ofNullable(newQuery))
+                .map(QueryTrimmers::trimQueryAnd)
+                .map(QueryTrimmers::trimQueryEquals)
+                .map(QueryTrimmers::trimQuery)
+                .map(trimmedNewQuery->{
+                    if(currentQuery.isEmpty()) return String.format("?%s", trimmedNewQuery);
+                    return String.format("%s&%s", currentQuery ,newQuery);
+                })
+                .orElse("");
     }
 
     private Optional<String> convertObjectToString(Object object){
@@ -118,7 +102,7 @@ public final class StructuredUriStringBuilder {
 
     public String build(){
         if(scheme.isEmpty()) return String.format("%s%s%s%s", host, port, path, query);
-        return String.format("%s://%s%s%s%s", scheme, host, port, host.isEmpty() ? trimSlashAtStart(path)
+        return String.format("%s://%s%s%s%s", scheme, host, port, host.isEmpty() ? SlashTrimmers.trimSlashAtStart(path)
                 .orElse("") : path, query);
     }
 

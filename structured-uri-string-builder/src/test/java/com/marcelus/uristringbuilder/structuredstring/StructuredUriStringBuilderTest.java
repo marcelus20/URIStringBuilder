@@ -156,4 +156,52 @@ class StructuredUriStringBuilderTest {
                 .build();
         assertEquals("http://www.foo.bar.bazz:20328?type&id&ticket&month&name=misha", result);
     }
+
+    @Test
+    void testingAppendingQueriesWithTrailingQuestionTag(){
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("www.foo.bar")
+                .appendQuery("?foo=bar")
+                .build();
+        assertEquals("www.foo.bar?foo=bar", result);
+    }
+
+    @Test
+    void testingAppendingQueriesWithTrailingQuestionTagUsing2ArgumentAppendQuery(){
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("www.foo.bar")
+                .appendQuery("?foo", "bar")
+                .build();
+        assertEquals("www.foo.bar?foo=bar", result);
+    }
+
+    @Test
+    void testingAppendingQueriesWithTrailingQuestionTagAndTrailingEqualsSignUsing2ArgumentAppendQuery(){
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("www.foo.bar")
+                .appendQuery("?foo", "=bar")
+                .build();
+        assertEquals("www.foo.bar?foo=bar", result);
+    }
+
+
+    @Test
+    void testingAppendingQueriesWithTrailingAndOperatorInQuery(){
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("www.foo.bar")
+                .appendQuery("foo", "bar&")
+                .appendQuery("fizz", "buzz")
+                .build();
+        assertEquals("www.foo.bar?foo=bar&fizz=buzz", result);
+    }
+
+    @Test
+    void testingAppendingQueriesWithWrongAndOperatorInFirstQuery(){
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("www.foo.bar")
+                .appendQuery("&foo", "bar&") // <-- The &foo should be removed and replaced with ?foo
+                .appendQuery("fizz", "buzz")
+                .build();
+        assertEquals("www.foo.bar?foo=bar&fizz=buzz", result);
+    }
 }
