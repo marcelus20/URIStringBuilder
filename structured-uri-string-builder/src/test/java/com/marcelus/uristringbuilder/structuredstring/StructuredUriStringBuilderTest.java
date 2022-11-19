@@ -70,7 +70,7 @@ class StructuredUriStringBuilderTest {
                 .appendPath("buzz")
 //                .appendQuery("ticket", "12345")
                 .build();
-        assertEquals("http://www.foo.bar.bazz", result);
+        assertEquals("http://www.foo.bar.bazz/fizz/buzz", result);
     }
 
     @Test
@@ -83,7 +83,7 @@ class StructuredUriStringBuilderTest {
                 .appendQuery("name", "misha")
                 .appendQuery("type", "buyer")
                 .build();
-        assertEquals("http://www.foo.bar.bazz?ticket=12345&month11&name=misha&type=buyer", result);
+        assertEquals("http://www.foo.bar.bazz?ticket=12345&month=11&name=misha&type=buyer", result);
     }
 
     @Test
@@ -96,7 +96,7 @@ class StructuredUriStringBuilderTest {
                 .appendQuery("name", "misha")
                 .appendQuery("type")
                 .build();
-        assertEquals("http://www.foo.bar.bazz?ticket?month?&name=misha&type", result);
+        assertEquals("http://www.foo.bar.bazz?ticket&month&name=misha&type", result);
     }
 
     @Test
@@ -109,7 +109,7 @@ class StructuredUriStringBuilderTest {
                 .appendHost("www.foo.bar.bazz")
                 .appendQuery("name", "misha")
                 .build();
-        assertEquals("http://www.foo.bar.bazz?type&ticket?month?&name=misha", result);
+        assertEquals("http://www.foo.bar.bazz?type&ticket&month&name=misha", result);
     }
 
     @Test
@@ -120,12 +120,40 @@ class StructuredUriStringBuilderTest {
                 .appendQuery("id")
                 .appendQuery("ticket")
                 .appendQuery("month")
-                .appendQuery("of")
-                .appendQuery("the")
-                .appendQuery("year")
                 .appendHost("www.foo.bar.bazz")
                 .appendQuery("name", "misha")
                 .build();
-        assertEquals("http://www.foo.bar.bazz?typeid&ticket?monthoftheyear?&name=misha", result);
+        assertEquals("http://www.foo.bar.bazz?type&id&ticket&month&name=misha", result);
+    }
+
+    @Test
+    void testingAppendingPort(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("http")
+                .appendQuery("type")
+                .appendQuery("id")
+                .appendQuery("ticket")
+                .appendQuery("month")
+                .appendHost("www.foo.bar.bazz")
+                .appendQuery("name", "misha")
+                .appendPort(32895)
+                .build();
+        assertEquals("http://www.foo.bar.bazz:32895?type&id&ticket&month&name=misha", result);
+    }
+
+    @Test
+    void testingAppendingPortInSeparatedAppends(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("http")
+                .appendPort("20")
+                .appendQuery("type")
+                .appendQuery("id")
+                .appendQuery("ticket")
+                .appendQuery("month")
+                .appendHost("www.foo.bar.bazz")
+                .appendQuery("name", "misha")
+                .appendPort(328)
+                .build();
+        assertEquals("http://www.foo.bar.bazz:20328?type&id&ticket&month&name=misha", result);
     }
 }
