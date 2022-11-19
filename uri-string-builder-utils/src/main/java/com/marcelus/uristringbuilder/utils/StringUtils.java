@@ -3,6 +3,8 @@ package com.marcelus.uristringbuilder.utils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StringUtils {
 
@@ -49,5 +51,22 @@ public class StringUtils {
         // List of reserved chars
         List<String> reservedChars= Arrays.asList("\\",".","<",">","*","+","-","=","!","?","^","$","|");
         return reservedChars.contains(character) ? String.format("\\%s", character) : character;
+    }
+
+
+    public static Optional<String> convertObjectToString(Object object){
+        return Optional.ofNullable(object)
+                .map(String::valueOf)
+                .flatMap(StringUtils::trim);
+    }
+
+    public static String retrievePartAfterPatternMatcher(final String string, final String patternString) {
+        final Pattern p = Pattern.compile(patternString);
+        final Matcher m = p.matcher(string);
+        if(m.find()){
+            return m.group();
+        }else {
+            return "";
+        }
     }
 }

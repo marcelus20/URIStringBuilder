@@ -2,13 +2,10 @@ package com.marcelus.uristringbuilder.rawstring;
 
 import com.marcelus.uristringbuilder.available.uri.schemes.URISchemes;
 
-
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static com.marcelus.uristringbuilder.utils.QueryTrimmers.trimQueryComponentsAndMerge;
 import static com.marcelus.uristringbuilder.utils.SlashTrimmers.trimSlashes;
+import static com.marcelus.uristringbuilder.utils.StringUtils.convertObjectToString;
+import static com.marcelus.uristringbuilder.utils.StringUtils.retrievePartAfterPatternMatcher;
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.DEFAULT_SCHEME;
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.PATH_SLASH;
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.PORT_REGEX;
@@ -73,9 +70,7 @@ public final class RawUriStringBuilder {
 
 
     public RawUriStringBuilder append(final Object urlPortion) {
-        return Optional.ofNullable(urlPortion)
-                .map(String::valueOf)
-                .map(String::trim)
+        return convertObjectToString(urlPortion)
                 .map(trimmedUrlPortion->handleSchemeAndEmptyUrlScenario(url, trimmedUrlPortion, pathStarted,
                         portDetected, queryStringStarted))
                 .orElse(new RawUriStringBuilder(""));
@@ -208,7 +203,7 @@ public final class RawUriStringBuilder {
 
         if(checkPortDetection(url, trimmedUrlPortion)){
 
-            final String result = retrievePortionFromPatternMatcher(url, trimmedUrlPortion);
+            final String result = retrievePartAfterPatternMatcher(url + trimmedUrlPortion, ":\\d+");
             final Boolean queryStringHasStarted = determineIfQueryHasStarted(queryStringStarted, trimmedUrlPortion);
             final String suffix = Boolean.TRUE.equals(queryStringHasStarted)? "" : PATH_SLASH.getValue();
 
@@ -231,20 +226,11 @@ public final class RawUriStringBuilder {
      */
 
 
+
+
     /*
     MISC
      */
-    private String retrievePortionFromPatternMatcher(final String url, final String trimmedUrlPortion) {
-        final Pattern p = Pattern.compile(":\\d+");
-        final Matcher m = p.matcher(url+trimmedUrlPortion);
-        if(m.find()){
-            return m.group();
-        }else {
-            return "";
-        }
-    }
-
-
     private String mergeUrlAndTrimmedPortion(
             final String url, final String trimmedUrlPortion, Boolean queryStringStarted
     ) {
@@ -259,13 +245,9 @@ public final class RawUriStringBuilder {
         }
     }
 
-
-
     private String produceHttpsDefaultScheme() {
         return DEFAULT_SCHEME.getValue() + POST_SCHEME_PORTION.getValue();
     }
-
-
 
     /*
     END OF MISC

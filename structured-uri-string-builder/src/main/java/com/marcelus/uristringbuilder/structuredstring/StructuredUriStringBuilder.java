@@ -5,6 +5,8 @@ import com.marcelus.uristringbuilder.utils.SlashTrimmers;
 
 import java.util.Optional;
 
+import static com.marcelus.uristringbuilder.utils.StringUtils.convertObjectToString;
+
 public final class StructuredUriStringBuilder {
 
     private final String scheme;
@@ -92,12 +94,6 @@ public final class StructuredUriStringBuilder {
                     return String.format("%s&%s", currentQuery ,newQuery);
                 })
                 .orElse("");
-    }
-
-    private Optional<String> convertObjectToString(Object object){
-       return Optional.ofNullable(object)
-               .map(String::valueOf)
-               .map(String::trim);
     }
 
     public String build(){
