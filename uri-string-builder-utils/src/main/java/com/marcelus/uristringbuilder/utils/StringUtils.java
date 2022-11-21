@@ -69,4 +69,12 @@ public class StringUtils {
             return "";
         }
     }
+
+    public static String replaceBlankSpaceWithEmptyStrings(final String string) {
+        return trim(string).map(s->s.replace(" ", "")).orElse("");
+    }
+
+    public static String replaceBlankSpaceWithPlusIcon(final String string) {
+        return trim(string).map(s->s.replace(" ", "+")).orElse("");
+    }
 }
