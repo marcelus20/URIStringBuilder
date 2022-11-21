@@ -2,6 +2,7 @@ package com.marcelus.uristringbuilder.structuredstring;
 
 import com.marcelus.uristringbuilder.utils.QueryTrimmers;
 import com.marcelus.uristringbuilder.utils.SlashTrimmers;
+import com.marcelus.uristringbuilder.utils.StringUtils;
 
 import java.util.Optional;
 
@@ -33,26 +34,30 @@ public final class StructuredUriStringBuilder {
 
     public StructuredUriStringBuilder appendScheme(final Object scheme){
         return convertObjectToString(scheme)
-                .map(sScheme->new StructuredUriStringBuilder(sScheme, host, port, path, query))
+                .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
+                .map(sScheme->new StructuredUriStringBuilder(mergeSchemes(this.scheme,sScheme), host, port, path, query))
                 .orElse(new StructuredUriStringBuilder(this.scheme,host, port, path, query));
     }
 
     public StructuredUriStringBuilder appendHost(final Object host){
         return convertObjectToString(host)
-                .map(sHost->new StructuredUriStringBuilder(scheme, sHost, port, path, query))
+                .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
+                .map(sHost->new StructuredUriStringBuilder(scheme, mergeHosts(this.host, sHost), port, path, query))
                 .orElse(new StructuredUriStringBuilder(scheme, this.host, port, path, query));
     }
 
     public StructuredUriStringBuilder appendPort(final Object port){
         return convertObjectToString(port)
-                .map(sPort->new StructuredUriStringBuilder(scheme, host, processPort(this.port, sPort), path, query))
+                .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
+                .map(sPort->new StructuredUriStringBuilder(scheme, host, mergePorts(this.port, sPort), path, query))
                 .orElse(new StructuredUriStringBuilder(scheme, host, this.port, path, query));
     }
 
     public StructuredUriStringBuilder appendPath(final Object path){
         return convertObjectToString(path)
+                .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
                 .map(SlashTrimmers::trimSlashes)
-                .map(sPath->new StructuredUriStringBuilder(scheme, host, port, processPath(this.path, sPath), query))
+                .map(sPath->new StructuredUriStringBuilder(scheme, host, port, mergePaths(this.path, sPath), query))
                 .orElse(new StructuredUriStringBuilder(scheme, host, port, this.path, query));
     }
 
@@ -60,30 +65,41 @@ public final class StructuredUriStringBuilder {
 
     public StructuredUriStringBuilder appendQuery(final Object key, final Object value){
         return convertObjectToString(key)
+                .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
                 .flatMap(sKey->convertObjectToString(value)
+                        .map(StringUtils::replaceBlankSpaceWithPlusIcon)
                         .map(sValue->new StructuredUriStringBuilder(scheme, host, port, path,
-                                processQuery(this.query, QueryTrimmers
+                                mergeQueries(this.query, QueryTrimmers
                                         .trimQueryComponents(sKey) + "=" + QueryTrimmers.trimQueryComponents(sValue)))))
                 .orElse(new StructuredUriStringBuilder(scheme, host, port, path, this.query));
     }
 
     public StructuredUriStringBuilder appendQuery(final Object query) {
         return convertObjectToString(query)
-                .map(sQuery->new StructuredUriStringBuilder(scheme, host, port, path, processQuery(this.query, sQuery)))
+                .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
+                .map(sQuery->new StructuredUriStringBuilder(scheme, host, port, path, mergeQueries(this.query, sQuery)))
                 .orElse(new StructuredUriStringBuilder(scheme, host, port, path, this.query));
     }
 
-    private String processPort(final String currentPort, final String newPortionPort) {
-        if(port.isEmpty()) return String.format(":%s", newPortionPort);
+    private String mergeSchemes(String currentScheme, String newSchemePortion) {
+        return String.format("%s%s",currentScheme, newSchemePortion);
+    }
+
+    private String mergeHosts(String currentHost, String newHost) {
+        return String.format("%s%s",currentHost, newHost);
+    }
+
+    private String mergePorts(final String currentPort, final String newPortionPort) {
+        if(currentPort.isEmpty()) return String.format(":%s", newPortionPort);
         return String.format("%s%s", currentPort, newPortionPort);
     }
 
-    private String processPath(String currentPath, String appendedPath) {
+    private String mergePaths(String currentPath, String appendedPath) {
         if(currentPath.isEmpty()) return String.format("/%s", appendedPath);
         return String.format("%s/%s", currentPath, appendedPath);
     }
 
-    private String processQuery(final String currentQuery, final String newQuery) {
+    private String mergeQueries(final String currentQuery, final String newQuery) {
         return Optional.ofNullable(currentQuery)
                 .flatMap(nonNullCurrentQuery->Optional.ofNullable(newQuery))
                 .map(QueryTrimmers::trimQueryAnd)
