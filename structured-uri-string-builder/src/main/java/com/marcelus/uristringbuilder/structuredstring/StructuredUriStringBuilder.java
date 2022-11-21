@@ -1,5 +1,6 @@
 package com.marcelus.uristringbuilder.structuredstring;
 
+import com.marcelus.uristringbuilder.uribuilders.StructuredBuildableUri;
 import com.marcelus.uristringbuilder.utils.QueryTrimmers;
 import com.marcelus.uristringbuilder.utils.SlashTrimmers;
 import com.marcelus.uristringbuilder.utils.StringUtils;
@@ -8,7 +9,7 @@ import java.util.Optional;
 
 import static com.marcelus.uristringbuilder.utils.StringUtils.convertObjectToString;
 
-public final class StructuredUriStringBuilder {
+public final class StructuredUriStringBuilder implements StructuredBuildableUri {
 
     private final String scheme;
     private final String host;
@@ -32,6 +33,7 @@ public final class StructuredUriStringBuilder {
         this.query = "";
     }
 
+    @Override
     public StructuredUriStringBuilder appendScheme(final Object scheme){
         return convertObjectToString(scheme)
                 .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
@@ -39,6 +41,7 @@ public final class StructuredUriStringBuilder {
                 .orElse(new StructuredUriStringBuilder(this.scheme,host, port, path, query));
     }
 
+    @Override
     public StructuredUriStringBuilder appendHost(final Object host){
         return convertObjectToString(host)
                 .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
@@ -46,6 +49,7 @@ public final class StructuredUriStringBuilder {
                 .orElse(new StructuredUriStringBuilder(scheme, this.host, port, path, query));
     }
 
+    @Override
     public StructuredUriStringBuilder appendPort(final Object port){
         return convertObjectToString(port)
                 .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
@@ -53,6 +57,7 @@ public final class StructuredUriStringBuilder {
                 .orElse(new StructuredUriStringBuilder(scheme, host, this.port, path, query));
     }
 
+    @Override
     public StructuredUriStringBuilder appendPath(final Object path){
         return convertObjectToString(path)
                 .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
@@ -63,6 +68,7 @@ public final class StructuredUriStringBuilder {
 
 
 
+    @Override
     public StructuredUriStringBuilder appendQuery(final Object key, final Object value){
         return convertObjectToString(key)
                 .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
@@ -74,6 +80,7 @@ public final class StructuredUriStringBuilder {
                 .orElse(new StructuredUriStringBuilder(scheme, host, port, path, this.query));
     }
 
+    @Override
     public StructuredUriStringBuilder appendQuery(final Object query) {
         return convertObjectToString(query)
                 .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
@@ -112,6 +119,7 @@ public final class StructuredUriStringBuilder {
                 .orElse("");
     }
 
+    @Override
     public String build(){
         if(scheme.isEmpty()) return String.format("%s%s%s%s", host, port, path, query);
         return String.format("%s://%s%s%s%s", scheme, host, port, host.isEmpty() ? SlashTrimmers.trimSlashAtStart(path)

@@ -1,6 +1,7 @@
 package com.marcelus.uristringbuilder.rawstring;
 
 import com.marcelus.uristringbuilder.available.uri.schemes.URISchemes;
+import com.marcelus.uristringbuilder.uribuilders.RawBuildableUri;
 
 import static com.marcelus.uristringbuilder.utils.QueryTrimmers.trimQueryComponentsAndMerge;
 import static com.marcelus.uristringbuilder.utils.SlashTrimmers.trimSlashes;
@@ -13,7 +14,8 @@ import static com.marcelus.uristringbuilder.utils.UriPortionConstants.PORT_START
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.POST_SCHEME_PORTION;
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.QUERY;
 
-public final class RawUriStringBuilder {
+public final class RawUriStringBuilder implements RawBuildableUri {
+
 
     /*
     Fields
@@ -69,6 +71,7 @@ public final class RawUriStringBuilder {
 
 
 
+    @Override
     public RawUriStringBuilder append(final Object urlPortion) {
         return convertObjectToString(urlPortion)
                 .map(trimmedUrlPortion->handleSchemeAndEmptyUrlScenario(url, trimmedUrlPortion, pathStarted,
@@ -76,6 +79,7 @@ public final class RawUriStringBuilder {
                 .orElse(new RawUriStringBuilder(""));
     }
 
+    @Override
     public String build() {
         return url;
     }

@@ -10,6 +10,7 @@
     <groupId>com.marcelus.uristringbuilder.structuredstring</groupId>
     <artifactId>structured-uri-string-builder</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <name>structured-uri-string-builder</name>
 
@@ -21,6 +22,12 @@
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.marcelus.uristringbuilder.uribuilders</groupId>
+            <artifactId>uri-builders</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
