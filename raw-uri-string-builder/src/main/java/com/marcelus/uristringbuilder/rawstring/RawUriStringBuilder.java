@@ -73,7 +73,7 @@ public final class RawUriStringBuilder implements RawBuildableUri {
 
 
     @Override
-    public RawBuildableUri append(String urlPortion) {
+    public RawBuildableUri append(final String urlPortion) {
         return Optional.ofNullable(urlPortion)
                 .map(trimmedUrlPortion->handleSchemeAndEmptyUrlScenario(url, trimmedUrlPortion, pathStarted,
                         portDetected, queryStringStarted))
@@ -81,7 +81,7 @@ public final class RawUriStringBuilder implements RawBuildableUri {
     }
 
     @Override
-    public RawBuildableUri append(Integer urlPortion) {
+    public RawBuildableUri append(final Integer urlPortion) {
         return convertObjectToString(urlPortion)
                 .map(this::append)
                 .orElse(new RawUriStringBuilder(""));
