@@ -3,6 +3,8 @@ package com.marcelus.uristringbuilder.rawstring;
 import com.marcelus.uristringbuilder.available.uri.schemes.URISchemes;
 import com.marcelus.uristringbuilder.uribuilders.RawBuildableUri;
 
+import java.util.Optional;
+
 import static com.marcelus.uristringbuilder.utils.QueryTrimmers.trimQueryComponentsAndMerge;
 import static com.marcelus.uristringbuilder.utils.SlashTrimmers.trimSlashes;
 import static com.marcelus.uristringbuilder.utils.StringUtils.convertObjectToString;
@@ -70,12 +72,18 @@ public final class RawUriStringBuilder implements RawBuildableUri {
      */
 
 
-
     @Override
-    public RawUriStringBuilder append(final Object urlPortion) {
-        return convertObjectToString(urlPortion)
+    public RawBuildableUri append(String urlPortion) {
+        return Optional.ofNullable(urlPortion)
                 .map(trimmedUrlPortion->handleSchemeAndEmptyUrlScenario(url, trimmedUrlPortion, pathStarted,
                         portDetected, queryStringStarted))
+                .orElse(new RawUriStringBuilder(""));
+    }
+
+    @Override
+    public RawBuildableUri append(Integer urlPortion) {
+        return convertObjectToString(urlPortion)
+                .map(this::append)
                 .orElse(new RawUriStringBuilder(""));
     }
 
