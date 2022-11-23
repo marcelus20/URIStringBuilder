@@ -204,4 +204,113 @@ class StructuredUriStringBuilderTest {
                 .build();
         assertEquals("www.foo.bar?foo=bar&fizz=buzz", result);
     }
+
+    @Test
+    void testingHostInDifferentAppends(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("http")
+                .appendHost("localhost")
+                .appendHost("8081")
+                .appendPath("v1/api/users")
+                .appendQuery("activated")
+                .build();
+        assertEquals("http://localhost8081/v1/api/users?activated", result);
+    }
+
+    @Test
+    void testingEmptySpacesInScheme(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("ht tp")
+                .appendHost("localhost")
+                .appendPort("8081")
+                .appendPath("v1/api/users")
+                .appendQuery("activated")
+                .build();
+        assertEquals("http://localhost:8081/v1/api/users?activated", result);
+    }
+
+    @Test
+    void testingEmptySpacesInHost(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("http")
+                .appendHost("192.1 68.7 7.3")
+                .appendPort("8081")
+                .appendPath("v1/api/users")
+                .appendQuery("activated")
+                .build();
+        assertEquals("http://192.168.77.3:8081/v1/api/users?activated", result);
+    }
+
+    @Test
+    void testingEmptySpacesInPort(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("http")
+                .appendHost("localhost")
+                .appendPort("808 1")
+                .appendPath("v1/api/users")
+                .appendQuery("activated")
+                .build();
+        assertEquals("http://localhost:8081/v1/api/users?activated", result);
+    }
+
+    @Test
+    void testingEmptySpacesInPath(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("http")
+                .appendHost("localhost")
+                .appendPort("8081")
+                .appendPath("v1/ap i/users")
+                .appendQuery("activated")
+                .build();
+        assertEquals("http://localhost:8081/v1/api/users?activated", result);
+    }
+
+    @Test
+    void testingEmptySpacesInQueryKeyString(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("ht tp")
+                .appendHost("localhost")
+                .appendPort("8081")
+                .appendPath("v1/api/users")
+                .appendQuery("activ ated")
+                .build();
+        assertEquals("http://localhost:8081/v1/api/users?activated", result);
+    }
+
+    @Test
+    void testingEmptySpacesInQueryValueString(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("ht tp")
+                .appendHost("localhost")
+                .appendPort("8081")
+                .appendPath("v1/api/articles")
+                .appendQuery("contains", "Once upon a time, there was a beast")
+                .build();
+        assertEquals("http://localhost:8081/v1/api/articles?contains=Once+upon+a+time,+there+was+a+beast", result);
+    }
+
+    @Test
+    void testingAppendShchemeInDifferentAppends(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("ht")
+                .appendScheme("tp")
+                .appendHost("localhost")
+                .appendPort("8081")
+                .build();
+
+        assertEquals("http://localhost:8081", result);
+    }
+
+    @Test
+    void testingAppendPortsInDifferentAppends(){
+        final String result = new StructuredUriStringBuilder()
+                .appendScheme("http")
+                .appendHost("localhost")
+                .appendPort("80")
+                .appendPort("81")
+                .build();
+
+        assertEquals("http://localhost:8081", result);
+    }
+
 }

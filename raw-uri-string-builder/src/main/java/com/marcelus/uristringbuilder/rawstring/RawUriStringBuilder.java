@@ -1,6 +1,10 @@
 package com.marcelus.uristringbuilder.rawstring;
 
 import com.marcelus.uristringbuilder.available.uri.schemes.URISchemes;
+import com.marcelus.uristringbuilder.uribuilders.RawBuildableUri;
+import com.marcelus.uristringbuilder.utils.StringUtils;
+
+import java.util.Optional;
 
 import static com.marcelus.uristringbuilder.utils.QueryTrimmers.trimQueryComponentsAndMerge;
 import static com.marcelus.uristringbuilder.utils.SlashTrimmers.trimSlashes;
@@ -12,8 +16,10 @@ import static com.marcelus.uristringbuilder.utils.UriPortionConstants.PORT_REGEX
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.PORT_START_DELIMITER;
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.POST_SCHEME_PORTION;
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.QUERY;
+import static com.marcelus.uristringbuilder.utils.UriPortionConstants.QUERY_EQUALS;
 
-public final class RawUriStringBuilder {
+public final class RawUriStringBuilder implements RawBuildableUri {
+
 
     /*
     Fields
@@ -68,14 +74,27 @@ public final class RawUriStringBuilder {
      */
 
 
-
-    public RawUriStringBuilder append(final Object urlPortion) {
-        return convertObjectToString(urlPortion)
+    @Override
+    public RawBuildableUri append(final String urlPortion) {
+        return Optional.ofNullable(urlPortion)
+                .map(this::handleSpaces)
                 .map(trimmedUrlPortion->handleSchemeAndEmptyUrlScenario(url, trimmedUrlPortion, pathStarted,
                         portDetected, queryStringStarted))
                 .orElse(new RawUriStringBuilder(""));
     }
 
+    private String handleNonQuerySpaces(String trimmedUrlPortion) {
+        return StringUtils.replaceBlankSpaceWithEmptyStrings(trimmedUrlPortion);
+    }
+
+    @Override
+    public RawBuildableUri append(final Integer urlPortion) {
+        return convertObjectToString(urlPortion)
+                .map(this::append)
+                .orElse(new RawUriStringBuilder(""));
+    }
+
+    @Override
     public String build() {
         return url;
     }
@@ -86,6 +105,24 @@ public final class RawUriStringBuilder {
     /*
         Handlers
      */
+
+    private String handleSpaces(final String trimmedUrlPortion) {
+        if(Boolean.FALSE.equals(queryStringStarted)){
+            return handleNonQuerySpaces(trimmedUrlPortion);
+        }else{
+            return handleQuerySpaces(trimmedUrlPortion);
+        }
+    }
+
+    private String handleQuerySpaces(String trimmedUrlPortion) {
+        if(url.endsWith(QUERY.getValue())){
+            return StringUtils.replaceBlankSpaceWithEmptyStrings(trimmedUrlPortion);
+        }else if(url.endsWith(QUERY_EQUALS.getValue())){
+            return StringUtils.replaceBlankSpaceWithPlusIcon(trimmedUrlPortion);
+        }else {
+            return StringUtils.replaceBlankSpaceWithEmptyStrings(trimmedUrlPortion);
+        }
+    }
     private RawUriStringBuilder handleSchemeAndEmptyUrlScenario(
             final String url,
             final String trimmedUrlPortion,
