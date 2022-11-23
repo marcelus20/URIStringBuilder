@@ -356,4 +356,84 @@ class RawUriStringBuilderTest
                 .build();
         assertEquals("ftp://192.168.0.58:80?foo=bar", url);
     }
+
+    @Test
+    void testingSpacesInScheme(){
+        String url = new RawUriStringBuilder()
+                .append("ft p")
+                .append("192.168.0.58:80?foo=")
+                .append("bar")
+                .build();
+        assertEquals("ftp://192.168.0.58:80?foo=bar", url);
+    }
+
+    @Test
+    void testingSpacesInHost(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168. 0.58:80?foo=")
+                .append("bar")
+                .build();
+        assertEquals("ftp://192.168.0.58:80?foo=bar", url);
+    }
+
+    @Test
+    void testingSpacesInPort(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:8 0?foo=")
+                .append("bar")
+                .build();
+        assertEquals("ftp://192.168.0.58:80?foo=bar", url);
+    }
+
+    @Test
+    void testingSpacesInQueryKey(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:8 0?fo o=")
+                .append("bar")
+                .build();
+        assertEquals("ftp://192.168.0.58:80?foo=bar", url);
+    }
+
+    @Test
+    void testingSpacesInQueryValue(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80?foo=")
+                .append("bar fizz buzz")
+                .build();
+        assertEquals("ftp://192.168.0.58:80?foo=bar+fizz+buzz", url);
+    }
+
+    @Test
+    void testingSpacesInQueryValueButEachPartInADifferentAppend(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80")
+                .append("?")
+                .append("foo")
+                .append("=")
+                .append("bar fizz buzz")
+                .build();
+        assertEquals("ftp://192.168.0.58:80?foo=bar+fizz+buzz", url);
+    }
+
+    @Test
+    void testingSpacesInQueryValueButEachPartInADifferentAppendAndMultipleQueryStrings(){
+        String url = new RawUriStringBuilder()
+                .append("ftp")
+                .append("192.168.0.58:80")
+                .append("?")
+                .append("foo")
+                .append("=")
+                .append("bar fizz buzz")
+                .append("&")
+                .append("another key")
+                .append("=")
+                .append("another value")
+                .build();
+        assertEquals("ftp://192.168.0.58:80?foo=bar+fizz+buzz&anotherkey=another+value", url);
+    }
 }
