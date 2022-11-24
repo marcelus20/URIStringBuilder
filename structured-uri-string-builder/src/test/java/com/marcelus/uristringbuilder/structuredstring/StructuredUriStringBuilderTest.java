@@ -2,6 +2,9 @@ package com.marcelus.uristringbuilder.structuredstring;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class StructuredUriStringBuilderTest {
@@ -311,6 +314,106 @@ class StructuredUriStringBuilderTest {
                 .build();
 
         assertEquals("http://localhost:8081", result);
+    }
+
+    @Test
+    void testingAppendQueryUsingMap(){
+        Map<String, String> map = new HashMap<>();
+        map.put("fizz", "buzz");
+        map.put("bar", "foo");
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("http")
+                .appendScheme("foo")
+                .appendQuery(map)
+                .build();
+
+
+        assertEquals("foo://http?bar=foo&fizz=buzz", result);
+    }
+
+    @Test
+    void testingAppendQueryUsingMapsInDifferentAppends(){
+        Map<String, String> map = new HashMap<>();
+        map.put("fizz", "buzz");
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("bar", "foo");
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("http")
+                .appendScheme("foo")
+                .appendQuery(map)
+                .appendQuery(map2)
+                .build();
+
+
+        assertEquals("foo://http?fizz=buzz&bar=foo", result);
+    }
+
+    @Test
+    void testingAppendQueryUsingMapsInDifferentAppendsAndNullValues(){
+        Map<String, String> map = new HashMap<>();
+        map.put("fizz", "buzz");
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("bar", null);
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("http")
+                .appendScheme("foo")
+                .appendQuery(map)
+                .appendQuery(map2)
+                .build();
+
+
+        assertEquals("foo://http?fizz=buzz&bar", result);
+    }
+
+    @Test
+    void testingAppendQueryUsingMapsInDifferentAppendsAndNullValuesInBothMaps(){
+        Map<String, String> map = new HashMap<>();
+        map.put("fizz", null);
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("bar", null);
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("http")
+                .appendScheme("foo")
+                .appendQuery(map)
+                .appendQuery(map2)
+                .build();
+
+
+        assertEquals("foo://http?fizz&bar", result);
+    }
+
+    @Test
+    void testingAppendQueryUsingMapsInDifferentAppendsAndNullKeys(){
+        Map<String, String> map = new HashMap<>();
+        map.put("fizz", "buzz");
+        Map<String, String> map2 = new HashMap<>();
+        map2.put(null, "bar");
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("http")
+                .appendScheme("foo")
+                .appendQuery(map)
+                .appendQuery(map2)
+                .build();
+
+
+        assertEquals("foo://http?fizz=buzz", result);
+    }
+
+    @Test
+    void testingAppendQueryUsingMapsWithKeysAndValuesNull(){
+        Map<String, String> map = new HashMap<>();
+        map.put(null, null);
+        Map<String, String> map2 = new HashMap<>();
+        map2.put(null, null);
+        final String result = new StructuredUriStringBuilder()
+                .appendHost("http")
+                .appendScheme("foo")
+                .appendQuery(map)
+                .appendQuery(map2)
+                .build();
+
+
+        assertEquals("foo://http", result);
     }
 
 }
