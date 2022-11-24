@@ -1,5 +1,7 @@
 package com.marcelus.uristringbuilder.uribuilders;
 
+import java.util.Map;
+
 public interface StructuredBuildableUri extends BuildableUri {
 
     StructuredBuildableUri appendScheme(final String scheme);
@@ -16,5 +18,6 @@ public interface StructuredBuildableUri extends BuildableUri {
     StructuredBuildableUri appendQuery(final String key, Integer value);
     StructuredBuildableUri appendQuery(final Integer key, String value);
     StructuredBuildableUri appendQuery(final Integer key, Integer value);
+    StructuredBuildableUri appendQuery(final Map<String, String> map);
 
 }

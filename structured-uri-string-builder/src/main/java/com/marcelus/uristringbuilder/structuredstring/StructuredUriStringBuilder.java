@@ -5,9 +5,13 @@ import com.marcelus.uristringbuilder.utils.QueryTrimmers;
 import com.marcelus.uristringbuilder.utils.SlashTrimmers;
 import com.marcelus.uristringbuilder.utils.StringUtils;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static com.marcelus.uristringbuilder.utils.StringUtils.convertObjectToString;
+import static com.marcelus.uristringbuilder.utils.UriPortionConstants.QUERY;
+import static com.marcelus.uristringbuilder.utils.UriPortionConstants.QUERY_AND;
+import static com.marcelus.uristringbuilder.utils.UriPortionConstants.QUERY_EQUALS;
 
 public final class StructuredUriStringBuilder implements StructuredBuildableUri {
 
@@ -129,6 +133,20 @@ public final class StructuredUriStringBuilder implements StructuredBuildableUri 
     }
 
     @Override
+    public StructuredBuildableUri appendQuery(Map<String, String> map) {
+        return Optional.ofNullable(map)
+                .map(nonNullMap->nonNullMap.entrySet().stream()
+                        .map(entry->String.format("%s%s%s",entry.getKey() == null? "": entry.getKey(),
+                                entry.getKey() == null ? "" : QUERY_EQUALS.getValue(),
+                                entry.getKey() == null || entry.getValue() == null? "": entry.getValue()))
+                        .reduce("",(acc,entry)->String.format("%s%s%s",
+                                acc, entry.isEmpty()?"":QUERY_AND.getValue(),
+                                entry))
+                ).map(this::appendQuery)
+                .orElse(new StructuredUriStringBuilder(scheme, host, port, path, this.query));
+    }
+
+    @Override
     public StructuredUriStringBuilder appendQuery(final String query) {
         return convertObjectToString(query)
                 .map(StringUtils::replaceBlankSpaceWithEmptyStrings)
@@ -168,8 +186,13 @@ public final class StructuredUriStringBuilder implements StructuredBuildableUri 
                 .map(QueryTrimmers::trimQueryEquals)
                 .map(QueryTrimmers::trimQuery)
                 .map(trimmedNewQuery->{
-                    if(currentQuery.isEmpty()) return String.format("?%s", trimmedNewQuery);
-                    return String.format("%s&%s", currentQuery ,newQuery);
+                    if(currentQuery.isEmpty()) return String.format("%s%s",
+                            trimmedNewQuery.isEmpty()? "" : QUERY.getValue(),
+                            trimmedNewQuery);
+                    return String.format("%s%s%s",
+                            currentQuery,
+                            trimmedNewQuery.isEmpty()? "" : QUERY_AND.getValue(),
+                            trimmedNewQuery);
                 })
                 .orElse("");
     }
