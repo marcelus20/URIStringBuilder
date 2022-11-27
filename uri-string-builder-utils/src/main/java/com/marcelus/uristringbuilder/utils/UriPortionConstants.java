@@ -8,7 +8,8 @@ public enum UriPortionConstants {
     QUERY("?"),
     QUERY_EQUALS("="),
     QUERY_AND("&"),
-    PORT_START_DELIMITER(":");
+    PORT_START_DELIMITER(":"),
+    QUERY_COMPOSITION_FORMAT("%s%s%s");
 
     private final String value;
 

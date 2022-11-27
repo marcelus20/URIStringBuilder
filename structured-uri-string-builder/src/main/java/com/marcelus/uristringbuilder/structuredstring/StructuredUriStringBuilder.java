@@ -221,7 +221,7 @@ public final class StructuredUriStringBuilder implements StructuredBuildableUri 
      * Takes a map and turns it into a query string by mapping the keys of the map to the keys of the query string and values
      * of the map to the values of the query string.
      * @param map the map String to String type that represents the set of key value pairs that composes the query string.
-     * @return a new object with the new state. 
+     * @return a new object with the new state.
      */
     @Override
     public StructuredBuildableUri appendQuery(Map<String, String> map) {
