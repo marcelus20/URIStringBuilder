@@ -4,12 +4,12 @@
     <parent>
         <artifactId>uri-string-builder-parent</artifactId>
         <groupId>com.marcelus.uristringbuilder</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <groupId>com.marcelus.uristringbuilder.utils</groupId>
     <artifactId>uri-string-builder-utils</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <name>uri-string-builder-utils</name>
 
