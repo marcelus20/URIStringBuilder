@@ -16,7 +16,7 @@ class RawUriStringBuilderTest
                 .append("://")
                 .append("www.foo.bar.com")
                 .append(":")
-                .append(8080)
+                .append("8080")
                 .append("/")
                 .append("path/portion")
                 .append("/")
@@ -35,7 +35,7 @@ class RawUriStringBuilderTest
 //                .append("://") <-- Missing this part.
                 .append("www.foo.bar.com")
                 .append(":")
-                .append(8080)
+                .append("8080")
                 .append("/")
                 .append("path/portion")
                 .append("/")
@@ -54,7 +54,7 @@ class RawUriStringBuilderTest
 //                .append("://") <-- Missing this part.
                 .append("www.foo.bar.com")
 //                .append(":") <- Missing colon after host:
-                .append(8080) // <- This should be considered part of the host since colon was missing in previous append
+                .append("8080") // <- This should be considered part of the host since colon was missing in previous append
                 .append("/")
                 .append("path/portion")
                 .append("/")
@@ -73,7 +73,7 @@ class RawUriStringBuilderTest
 //                .append("://") <-- Missing this part.
                 .append("www.foo.bar.com")
 //                .append(":") <- Missing colon after host:
-                .append(8080) // <- This should be considered part of the host
+                .append("8080") // <- This should be considered part of the host
 //                .append("/") This missing slash should be added.
                 .append("path/portion")
                 .append("/")
@@ -92,7 +92,7 @@ class RawUriStringBuilderTest
                 .append("://")
                 .append("www.foo.bar.com")
                 .append(":")
-                .append(8080)
+                .append("8080")
                 .append("/")
                 .append("/path/portion/") // <- Trailing Slashes on Path
                 .append("/") // <- Trailing Slashes on Path

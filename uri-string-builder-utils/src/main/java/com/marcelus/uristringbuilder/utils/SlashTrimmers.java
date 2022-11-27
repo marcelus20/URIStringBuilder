@@ -4,13 +4,24 @@ import java.util.Optional;
 
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.PATH_SLASH;
 
+/**
+ * Utility class for trimming slashes from string.
+ */
 public class SlashTrimmers {
 
+    /**
+     * Private constructor to avoid instantiating.
+     */
     private SlashTrimmers(){
 
     }
 
-    public static String trimSlashes(String path) {
+    /**
+     * Removes slashes at the end and at the start of the string.
+     * @param path string to be trimmed.
+     * @return a new string with slashes removed from end and start.
+     */
+    public static String trimSlashes(final String path) {
         return Optional.ofNullable(path)
                 .map(String::trim)
                 .flatMap(SlashTrimmers::trimSlashAtStart)
@@ -18,7 +29,12 @@ public class SlashTrimmers {
                 .orElse("");
     }
 
-    public static Optional<String> trimSlashAtEnd(String path){
+    /**
+     * Removes slashes at the end of the string.
+     * @param path string to be trimmed.
+     * @return a new string with slashes removed from end.
+     */
+    public static Optional<String> trimSlashAtEnd(final String path){
         return Optional.ofNullable(path)
                 .map(String::trim)
                 .map(p->{
@@ -29,7 +45,12 @@ public class SlashTrimmers {
                 });
     }
 
-    public static Optional<String> trimSlashAtStart(String path) {
+    /**
+     * Removes slashes at the start of the string.
+     * @param path string to be trimmed.
+     * @return a new string with slashes removed from start.
+     */
+    public static Optional<String> trimSlashAtStart(final String path) {
         return Optional.ofNullable(path)
                 .map(String::trim)
                 .map(nonNullPath->{

@@ -6,6 +6,9 @@ Enum created based on this WIKIPEDIA page: https://en.wikipedia.org/wiki/List_of
 
 import java.util.Arrays;
 
+/**
+ * Enum for assisting the RawUriStringBuilder to determine if portion is a scheme.
+ */
 public enum URISchemes {
     ADMIN("admin"),
     APP("app"),
@@ -236,6 +239,11 @@ public enum URISchemes {
         this.scheme = scheme;
     }
 
+    /**
+     * Takes a string and checks if its value matches the UriScheme enum values.
+     * @param scheme a string where the scheme will be validated against.
+     * @return a boolean indicating whether the string is a scheme from this enum or not.
+     */
     public static Boolean isScheme(String scheme){
 
         // Check the most common protocols before looping through ALL protocols.

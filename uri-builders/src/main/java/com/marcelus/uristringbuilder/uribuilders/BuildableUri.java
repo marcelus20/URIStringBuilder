@@ -1,7 +1,15 @@
 package com.marcelus.uristringbuilder.uribuilders;
 
-public interface BuildableUri {
+/**
+ * The buildable URI interface.
+ * @param <T> The type of the build return.
+ */
+public interface BuildableUri<T> {
 
-    String build();
+    /**
+     * Method for building the BuildableUri object.
+     * @return the built object.
+     */
+    T build();
 
 }
