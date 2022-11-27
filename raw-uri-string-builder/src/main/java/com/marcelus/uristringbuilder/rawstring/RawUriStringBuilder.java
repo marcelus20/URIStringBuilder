@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import static com.marcelus.uristringbuilder.utils.QueryTrimmers.trimQueryComponentsAndMerge;
 import static com.marcelus.uristringbuilder.utils.SlashTrimmers.trimSlashes;
-import static com.marcelus.uristringbuilder.utils.StringUtils.convertObjectToString;
 import static com.marcelus.uristringbuilder.utils.StringUtils.retrievePartAfterPatternMatcher;
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.DEFAULT_SCHEME;
 import static com.marcelus.uristringbuilder.utils.UriPortionConstants.PATH_SLASH;
@@ -21,7 +20,7 @@ import static com.marcelus.uristringbuilder.utils.UriPortionConstants.QUERY_EQUA
 /**
  * Class that contains the append method for assisting building the URI strings.
  */
-public final class RawUriStringBuilder implements RawBuildableUri {
+public final class RawUriStringBuilder implements RawBuildableUri<String> {
 
 
     /*
@@ -102,7 +101,7 @@ public final class RawUriStringBuilder implements RawBuildableUri {
      * @return the resulting object with a new state
      */
     @Override
-    public RawBuildableUri append(final String newUrlPortion) {
+    public RawBuildableUri<String> append(final String newUrlPortion) {
         return Optional.ofNullable(newUrlPortion)
                 .map(this::handleSpaces)
                 .map(trimmedUrlPortion->handleSchemeAndEmptyUrlScenario(url, trimmedUrlPortion, pathStarted,
@@ -110,21 +109,9 @@ public final class RawUriStringBuilder implements RawBuildableUri {
                 .orElse(new RawUriStringBuilder(""));
     }
 
-    /**
-     * Takes a portion of a URL that may be a integer, converts it into a string, process it and append it to the
-     * current url field by returning a new RawUriStringBuilder
-     * @param newUrlPortion The portion of the URL to be appended to the current url field.
-     * @return the resulting object with a new state
-     */
-    @Override
-    public RawBuildableUri append(final Integer newUrlPortion) {
-        return convertObjectToString(newUrlPortion)
-                .map(this::append)
-                .orElse(new RawUriStringBuilder(""));
-    }
 
     /**
-     * A sort of a getter for the URL field. Usually to be invoked when the URL is ready and has no pending appending.
+     * A sort of getter for the URL field. Usually to be invoked when the URL is ready and has no pending appending.
      * @return The url field.
      */
     @Override

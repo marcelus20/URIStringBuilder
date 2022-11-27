@@ -139,7 +139,7 @@ class StructuredUriStringBuilderTest {
                 .appendQuery("month")
                 .appendHost("www.foo.bar.bazz")
                 .appendQuery("name", "misha")
-                .appendPort(32895)
+                .appendPort("32895")
                 .build();
         assertEquals("http://www.foo.bar.bazz:32895?type&id&ticket&month&name=misha", result);
     }
@@ -155,7 +155,7 @@ class StructuredUriStringBuilderTest {
                 .appendQuery("month")
                 .appendHost("www.foo.bar.bazz")
                 .appendQuery("name", "misha")
-                .appendPort(328)
+                .appendPort("328")
                 .build();
         assertEquals("http://www.foo.bar.bazz:20328?type&id&ticket&month&name=misha", result);
     }
