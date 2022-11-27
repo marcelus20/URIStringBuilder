@@ -140,7 +140,7 @@ After doing the above steps, you will be able to import this lib into your proje
     <dependency>
         <groupId>com.marcelus.uristringbuilder.structuredstring</groupId>
         <artifactId>structured-uri-string-builder</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </dependency>
 ```
 
@@ -149,7 +149,7 @@ After doing the above steps, you will be able to import this lib into your proje
     <dependency>
         <groupId>com.marcelus.uristringbuilder.rawstring</groupId>
         <artifactId>raw-uri-string-builder</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </dependency>
 ```
 PS: To see what releases are available, check the [tags](https://github.com/marcelus20/URIStringBuilder/tags) page.
